@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console MIDI Web</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #midiMessages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Console MIDI Web</h1>
+    <div id="midiMessages"></div>
+
+    <script>
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+        } else {
+            alert("Web MIDI API n'est pas supportée dans ce navigateur.");
+        }
+
+        function onMIDISuccess(midiAccess) {
+            const inputs = midiAccess.inputs.values();
+            for (let input of inputs) {
+                input.onmidimessage = getMIDIMessage;
+            }
+        }
+
+        function onMIDIFailure() {
+            alert("Échec de l'accès MIDI.");
+        }
+
+        function getMIDIMessage(message) {
+            const data = message.data;
+            const cmd = data[0] >> 4;
+            const channel = data[0] & 0xf;
+            const type = data[0] & 0xf0;
+            const note = data[1];
+            const velocity = data[2];
+
+            const midiMessage = `Command: ${cmd}, Channel: ${channel}, Type: ${type}, Note: ${note}, Velocity: ${velocity}`;
+            displayMIDIMessage(midiMessage);
+        }
+
+        function displayMIDIMessage(message) {
+            const midiMessagesDiv = document.getElementById('midiMessages');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            midiMessagesDiv.appendChild(messageElement);
+            midiMessagesDiv.scrollTop = midiMessagesDiv.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
